@@ -1,0 +1,63 @@
+//
+//  XCKoLog.swift
+//  ririsid
+//
+//  Created by Jeongyeon Park on 27/07/2017.
+//
+//
+
+import Foundation
+
+/// Xcode에서 한글 로그가 유니코드 값으로 표현되는 것을 읽을 수 있게 변환한다.
+private func koLog(_ string: String) -> String {
+    // 유니코드 값을 찾을 정규표현식을 만든다.
+    let pattern = "\\\\U([a-z0-9]{1,8})"
+    var regex: NSRegularExpression
+    do {
+        regex = try NSRegularExpression(pattern: pattern, options: [])
+    } catch {
+        debugPrint("\(error)")
+        return ""
+    }
+
+    // 변환하고 반환한다.
+    return replacingCharacters(with: string, regex: regex)
+}
+
+/// 정규표현식에 맞는 문자를 찾아서 변환한다.
+private func replacingCharacters(with string: String, regex: NSRegularExpression) -> String {
+    // 정규표현식에 맞는 문자를 찾는다.
+    let range = NSRange(location: 0, length: string.characters.count)
+    guard let firstMatch = regex.firstMatch(in: string, options: [], range: range) else {
+        return string
+    }
+
+    // 정규표현식 결과를 사용해 변환하려면 `NSString`을 쓰는 게 편하다.
+    let nsString = string as NSString
+    // 찾은 문자를 잘라낸다.
+    let substring = nsString.substring(with: firstMatch.rangeAt(1))
+    // 유니코드 값을 구한다. 유니코드 문자열은 16진수이며, 유니코드 스칼라는 21비트이다.
+    let unicodeValue = UInt32(substring, radix: 16)!
+    // 유니코드 값을 유니코드 스칼라로 변환한다.
+    guard let unicodeScalar = UnicodeScalar(unicodeValue) else {
+        return string
+    }
+
+    // 유니코드 표현을 찾아 유니코드 스칼라로 교체한다.
+    let newString = nsString.replacingCharacters(in: firstMatch.rangeAt(0), with: String(unicodeScalar))
+
+    // 재귀 호출한다.
+    return replacingCharacters(with: newString, regex: regex)
+}
+
+// 인자가 있는지 확안한다.
+guard CommandLine.arguments.count > 1 else {
+    fatalError("No arguments!")
+}
+
+// 첫 번째 인자를 꺼낸다.
+let arg = CommandLine.arguments[1]
+
+// 인자를 변환하고 화면에 찍는다.
+let newString = koLog(arg)
+print("=> \"\(newString)\"")
