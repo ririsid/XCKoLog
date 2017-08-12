@@ -9,7 +9,7 @@
 import Foundation
 
 /// Xcode에서 한글 로그가 유니코드 값으로 표현되는 것을 읽을 수 있게 변환한다.
-private func koLog(_ string: String) -> String {
+func koLog(_ string: String) -> String {
     // 유니코드 값을 찾을 정규표현식을 만든다.
     let pattern = "\\\\U([a-z0-9]{1,8})"
     var regex: NSRegularExpression
@@ -49,15 +49,3 @@ private func replacingCharacters(with string: String, regex: NSRegularExpression
     // 재귀 호출한다.
     return replacingCharacters(with: newString, regex: regex)
 }
-
-// 인자가 있는지 확안한다.
-guard CommandLine.arguments.count > 1 else {
-    fatalError("No arguments!")
-}
-
-// 첫 번째 인자를 꺼낸다.
-let arg = CommandLine.arguments[1]
-
-// 인자를 변환하고 화면에 찍는다.
-let newString = koLog(arg)
-print("=> \"\(newString)\"")
