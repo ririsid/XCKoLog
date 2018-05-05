@@ -6,26 +6,33 @@
 //
 //
 
-/// 인자 배열
-let arguments = CommandLine.arguments
-
-// 인자가 있는지 확안한다.
-if arguments.count > 1 {
-    /// 변환된 문자열을 저장할 변수
-    var convertedText: String = ""
-
-    // 모든 인자를 변환해서 `convertedText`에 추가한다.
-    for n in 1..<arguments.count {
-        let converted = koLog(arguments[n])
-        if n == 1 {
-            convertedText = converted
-        } else {
-            convertedText = "\(convertedText) \(converted)"
+/**
+  *
+  * main() will be run when you invoke this action
+  *
+  * @param Cloud Functions actions accept a single parameter, which must be Codable.
+  *
+  * @return The completion function, which takes as output a Codable and Error?.
+  *
+  */
+struct Input: Codable {
+    let text: String?
+}
+struct Output: Codable {
+    let text: String
+}
+enum ParameterError: Error {
+    case noParameters
+}
+func main(param: Input, completion: (Output?, Error?) -> Void) -> Void {
+    if let text = param.text {
+        let result = Output(text: koLog(text))
+        completion(result, nil)
+    } else {
+        do{
+            throw ParameterError.noParameters
+        } catch {
+            completion(nil, error)
         }
     }
-
-    // 최종 결과를 출력한다.
-    print("=> \"\(convertedText)\"")
-} else {
-    print("=> No arguments!")
 }
